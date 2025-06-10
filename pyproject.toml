@@ -9,6 +9,10 @@ dependencies = [
     "kaleido==0.2.1",
     "torch>=2.7.0",
     "vanna[chromadb,mysql,openai]>=0.7.9",
+    "unipressed>=1.4.0",
+    "requests>=2.31.0",
+    "tqdm>=4.66.0",
+    "pandas>=2.0.0",
 ]
 
 [dependency-groups]

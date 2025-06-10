@@ -10,4 +10,5 @@ wheels/
 .venv
 *sqlite
 *chroma.sqlite3
-
+data/
+*db

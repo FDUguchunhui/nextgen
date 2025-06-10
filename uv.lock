@@ -2082,7 +2082,11 @@ source = { virtual = "." }
 dependencies = [
     { name = "dotenv" },
     { name = "kaleido" },
+    { name = "pandas" },
+    { name = "requests" },
     { name = "torch" },
+    { name = "tqdm" },
+    { name = "unipressed" },
     { name = "vanna", extra = ["chromadb", "mysql", "openai"] },
 ]
 
@@ -2095,7 +2099,11 @@ dev = [
 requires-dist = [
     { name = "dotenv", specifier = ">=0.9.9" },
     { name = "kaleido", specifier = "==0.2.1" },
+    { name = "pandas", specifier = ">=2.0.0" },
+    { name = "requests", specifier = ">=2.31.0" },
     { name = "torch", specifier = ">=2.7.0" },
+    { name = "tqdm", specifier = ">=4.66.0" },
+    { name = "unipressed", specifier = ">=1.4.0" },
     { name = "vanna", extras = ["chromadb", "mysql", "openai"], specifier = ">=0.7.9" },
 ]
 
@@ -2360,6 +2368,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/95/32/1a225d6164441be760d75c2c42e2780dc0873fe382da3e98a2e1e48361e5/tzdata-2025.2.tar.gz", hash = "sha256:b60a638fcc0daffadf82fe0f57e53d06bdec2f36c4df66280ae79bce6bd6f2b9", size = 196380, upload-time = "2025-03-23T13:54:43.652Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5c/23/c7abc0ca0a1526a0774eca151daeb8de62ec457e77262b66b359c3c7679e/tzdata-2025.2-py2.py3-none-any.whl", hash = "sha256:1a403fada01ff9221ca8044d701868fa132215d84beb92242d9acd2147f667a8", size = 347839, upload-time = "2025-03-23T13:54:41.845Z" },
+]
+
+[[package]]
+name = "unipressed"
+version = "1.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/57/f3/1bff788016e59c20228e0afd5336766723a2ad07dcc2de63de2fce8943af/unipressed-1.4.0.tar.gz", hash = "sha256:a590f4b8f41b4daf5485400b6149449face7ca91e3e93a113dacefbfdc684887", size = 27337, upload-time = "2024-08-16T12:05:21.31Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2f/f3/9e4144e6fdfcc9fb8de255564e9773dc3ee9499a27ca706fda8b495fbb0f/unipressed-1.4.0-py3-none-any.whl", hash = "sha256:f3c53280668846b3164eae066a575b28399d1606d124f6cce5ac0bf405cf24e1", size = 35784, upload-time = "2024-08-16T12:05:19.904Z" },
 ]
 
 [[package]]
