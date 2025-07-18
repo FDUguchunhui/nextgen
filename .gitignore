@@ -8,7 +8,6 @@ wheels/
 
 # Virtual environments
 .venv
-*sqlite
-*chroma.sqlite3
 data/
+database/
 *db
