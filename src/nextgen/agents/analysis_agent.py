@@ -36,6 +36,7 @@ class AnalysisAgent(Agent):
         "{sql}"
 
         Your task is to extract a list of proteins that answer the question, based strictly on the data.
+        You should give as comprehensive answer as possible to the question.
 
         ✅ Output requirements:
         - Only output valid Python code.
@@ -81,7 +82,8 @@ class AnalysisAgent(Agent):
         # 4. Get LLM response
         completion = self.client.chat.completions.create(
             messages=messages,
-            model="unused"
+            model="unused",
+            temperature=0
         )
         
         return ast.literal_eval(completion.choices[0].message.content)

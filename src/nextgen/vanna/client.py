@@ -4,9 +4,8 @@ from openai import OpenAI
 from vanna.base import VannaBase
 from vanna.chromadb import ChromaDB_VectorStore
 
-class LlamaLLM(VannaBase):
+class MDAndersonLLM_Chat(VannaBase):
 
-    
     def __init__(self, config=None):
         if config is None:
             raise ValueError(
@@ -54,8 +53,3 @@ class LlamaLLM(VannaBase):
 
         return completion.choices[0].message.content
     
-
-class MyVanna(ChromaDB_VectorStore, LlamaLLM):
-    def __init__(self, config=None):
-        ChromaDB_VectorStore.__init__(self, config=config)
-        LlamaLLM.__init__(self, config=config)

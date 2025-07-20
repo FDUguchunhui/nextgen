@@ -33,22 +33,36 @@ class CrossReferenceAgent(Agent):
         """
         Send a message to the LLM.
         """
-        system_message = f'''
-        You are a cancer biology expert. You are given a question and a list of proteins.
-        You need to cross-check the proteins with the online literature. 
-        You should list the supporting evidence for each protein for the question.
-        For proteins without existing supporting literature, you should mention that and give possible reasons why 
-        it is possible that the proteins is still important for the question.
-        You should list the validated proteins first and then the potential proteins.
-        You should ouput the results in markdown format.
-        '''
+        system_prompt = """
+        You are a cancer biology expert and literature mining assistant. Your task is to analyze a list of proteins in the context of a specific cancer-related research question.
+
+        For each protein, follow this process:
+        1. **Cross-reference the protein with online literature**, focusing on reputable sources such as PubMed, Google Scholar, and recent cancer biology publications.
+        2. **For proteins with supporting literature** relevant to the research question:
+        - Summarize the evidence (e.g., experimental findings, biomarkers, known pathways).
+        - Include citations or links where appropriate.
+        3. **For proteins without supporting literature**, do the following:
+        - Clearly state that no supporting evidence was found.
+        - Offer plausible hypotheses or biological reasoning as to why the protein could still be relevant (e.g., functional domain, expression patterns, co-expression with known markers, involvement in related pathways).
+        - Mark these as "potential candidates".
+
+        Output format:
+        - Use **markdown**.
+        - Organize proteins into two sections:
+        - `### Validated Proteins`
+        - `### Potential Candidates`
+        - For each protein, use bullet points to present findings clearly.
+
+        Be thorough, cite evidence where possible, and provide biologically sound reasoning even when direct evidence is absent.
+        """
+
         user_prompt = f'''
         Question: {question},
         Proteins: {proteins}
         '''
 
         return [
-            {"role": "system", "content": system_message},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
         ]
 

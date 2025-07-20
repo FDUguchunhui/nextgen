@@ -5,7 +5,7 @@ from pandasai import Agent
 from pandasai.llm import OpenAI
 from pandasai.ee.vectorstores import ChromaDB
 from pandasai import SmartDataframe
-from nextgen.chat.client import MDAndersonLLM
+from nextgen.pandas.client import MDAndersonLLM
 from nextgen.analysis.t_test import perform_t_test
 
 class StatisticianAgent:

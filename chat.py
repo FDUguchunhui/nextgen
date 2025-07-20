@@ -1,25 +1,14 @@
-import os
-from vanna.chromadb import ChromaDB_VectorStore
-from nextgen.vanna.llama import MyVanna
 from nextgen.agents.analysis_agent import AnalysisAgent
 from nextgen.agents.statistician_agent import StatisticianAgent
 from nextgen.agents.cross_reference_agent import CrossReferenceAgent
+from nextgen.agents.data_scientist_agent import get_data_scientist_agent
 
-config={
-    'APIM_SUBSCRIPTION_KEY': os.getenv('APIM_SUBSCRIPTION_KEY'),
-    'path': 'database/chroma'
-    }
-
-vn = MyVanna(config=config)
-vn.connect_to_sqlite('database/nextgen.db')
-
-question = "Extract protein expression data and cancer type for protein. Only extract proteins from breast cancer and gastric cancer."
-sql, df, _ = vn.ask(question=question, auto_train=False)
-# save the dataframe to a csv file
-df.to_csv('data/test_statistician.csv', index=False)
+question = "What proteins are important for distinguishing between breast and all other cancer types?"
+data_scientist_agent = get_data_scientist_agent()
+raw_data, sql = data_scientist_agent.analyze(question=question)
 
 statistician_agent = StatisticianAgent()
-statistician_result = statistician_agent.analyze('Perform a two-sample t-test for each unique protein comparing expression levels between the two cancer types', df)
+statistician_result = statistician_agent.analyze('Perform a two-sample t-test for each unique protein comparing expression levels between the two cancer types. Filter proteins with p-value less than 0.05.', raw_data)
 
 print(statistician_result.head(10))
 
