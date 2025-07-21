@@ -12,21 +12,22 @@ class MDAndersonLLM():
         ).chat.completions
 
         self._invocation_params = kwargs
-        self.conversation_history = []  # Initialize conversation history
 
     def chat(self, message: str) -> str:
-        self.conversation_history.append({"role": "user", "content": message})
 
         params = {
-            "messages": self.conversation_history,
             "temperature": self._invocation_params.get("temperature", 0),
+            "model": "llama31-70b",
             **self._invocation_params
         }
+        messages = [{"role": "user", "content": message}]
         try:
-            response = self.client.create(**params)
-            reply = response.choices[0].message.content
-            self.conversation_history.append({"role": "assistant", "content": reply})
-            return reply
+            response = self.client.create(messages=messages, **params)
+            return response.choices[0].message.content
         except Exception as e:
             logging.error(f"Error during chat completion: {e}")
             return "An error occurred while processing your request."
+
+if __name__ == "__main__":
+    llm = MDAndersonLLM()
+    print(llm.chat('Hello, how are you?'))

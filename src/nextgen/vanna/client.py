@@ -48,7 +48,7 @@ class MDAndersonLLM_Chat(VannaBase):
         completion = self.client.chat.completions.create(
             messages=prompt,
             model=self.model,
-            temperature=0
+            temperature=0.7
         )
 
         return completion.choices[0].message.content

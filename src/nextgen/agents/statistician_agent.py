@@ -2,7 +2,8 @@ from typing import Optional, Union, List
 import pandas as pd
 import os
 from pandasai import Agent
-from pandasai.llm import OpenAI
+import pandasai as pai
+# from pandasai_openai import OpenAI
 from pandasai.ee.vectorstores import ChromaDB
 from pandasai import SmartDataframe
 from nextgen.pandas.client import MDAndersonLLM
@@ -14,7 +15,7 @@ class StatisticianAgent:
     using natural language queries.
     """
     
-    def __init__(self, additional_dependencies: List[str] = None):
+    def __init__(self, model: str = "md_anderson", additional_dependencies: List[str] = None):
         """
         Initialize the statistician agent.
         
@@ -22,7 +23,10 @@ class StatisticianAgent:
             api_base_url: Base URL for the OpenAI API
             additional_dependencies: Additional Python packages to whitelist for analysis
         """
-        self.client = MDAndersonLLM()
+        if model == "md_anderson":
+            self.client = MDAndersonLLM()
+        # elif model == "openai":
+        #     self.client = OpenAI(api_token=os.environ["OPENAI_API_KEY"])
         
         # Default dependencies for statistical analysis
         self.dependencies = ["scipy", "statistics", "numpy", "pandas", "scikit-learn", "warnings"]
@@ -65,8 +69,6 @@ class StatisticianAgent:
             print("\nData Types:\n", df.dtypes)
             
             config = {
-                # use openai
-                # "llm": OpenAI(api_key=os.environ["OPENAI_API_KEY"]),
                 "llm": self.client,
                 "custom_whitelisted_dependencies": self.dependencies,
                 "enable_cache": True,
