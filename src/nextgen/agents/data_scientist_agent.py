@@ -38,7 +38,7 @@ initial_prompt = f"""
 
 
 
-def get_vanna_instance(model: str = 'md_anderson'):
+def get_vanna_instance(model: str = 'md_anderson', chroma_path: str = 'database/data_scientist_chroma'):
     
     if model == 'md_anderson':
         api_key = os.getenv('APIM_SUBSCRIPTION_KEY')
@@ -52,7 +52,7 @@ def get_vanna_instance(model: str = 'md_anderson'):
         
         config = {
             'APIM_SUBSCRIPTION_KEY': api_key,
-            'path': 'database/chroma',
+            'path': chroma_path,
             'initial_prompt': initial_prompt
             }
 
@@ -64,8 +64,9 @@ def get_vanna_instance(model: str = 'md_anderson'):
 
         config={'api_key': os.getenv('OPENAI_API_KEY'),
                 'model': 'gpt-4.1',
-                'path': 'database/chroma',
-                'initial_prompt': initial_prompt}
+                'path': chroma_path,
+                'initial_prompt': initial_prompt,
+                'temperature': 0.0}
     vn = MyVanna(config=config)
     vn.connect_to_sqlite('database/nextgen.db')
     return vn
@@ -86,7 +87,7 @@ def get_data_scientist_agent(model: str = 'md_anderson'):
 
 
 if __name__ == "__main__":
-    agent = get_data_scientist_agent()
+    agent = get_data_scientist_agent('openai')
     # Extract protein expression data and cancer type for protein. Only extract proteins from breast cancer and gastric cancer.
     # query_plan = agent.generate_query_plan("What proteins are important for distinguishing between breast and all other cancer types?")
     # question = "What proteins could be good biomarkers for breast cancer?"

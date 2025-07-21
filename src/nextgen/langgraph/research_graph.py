@@ -72,12 +72,12 @@ class ResearchGraph:
             *None*, a default ``database/langgraph_checkpoints.db`` is created.
         """
         self.db_path = db_path or "database/nextgen.db"
-        chroma_path = chroma_path or "database/chroma"
+        chroma_path = chroma_path or "database/data_scientist_chroma"
         checkpoint_path = checkpoint_path or "database/langgraph_checkpoints.db"
 
         # -------------------------- Initialise helper objects -----------------
         # Data retrieval agent (wraps Vanna internally)
-        self.data_scientist_agent = get_data_scientist_agent(model=MODEL)
+        self.data_scientist_agent = get_data_scientist_agent(model=MODEL, chroma_path=chroma_path)
 
         # Other agents
         self.statistician = StatisticianAgent()
