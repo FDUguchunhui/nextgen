@@ -3,7 +3,7 @@ import pandas as pd
 import os
 from pandasai import Agent
 import pandasai as pai
-# from pandasai_openai import OpenAI
+from pandasai.llm import OpenAI
 from pandasai.ee.vectorstores import ChromaDB
 from pandasai import SmartDataframe
 from nextgen.pandas.client import MDAndersonLLM
@@ -15,7 +15,7 @@ class StatisticianAgent:
     using natural language queries.
     """
     
-    def __init__(self, vector_store_path: str = "database/statistician_chroma", additional_dependencies: List[str] = None):
+    def __init__(self, model: str = "openai", vector_store_path: str = "database/statistician_chroma", additional_dependencies: List[str] = None):
         """
         Initialize the statistician agent.
         
@@ -24,7 +24,10 @@ class StatisticianAgent:
             additional_dependencies: Additional Python packages to whitelist for analysis
         """
         self.vector_store_path = vector_store_path
-        self.client = MDAndersonLLM()
+        if model == "md_anderson":
+            self.client = MDAndersonLLM()
+        elif model == "openai":
+            self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         
         # Default dependencies for statistical analysis
         self.dependencies = ["scipy", "statistics", "numpy", "pandas", "scikit-learn", "warnings"]
@@ -109,8 +112,8 @@ class StatisticianAgent:
             raise Exception(f"Error analyzing data: {str(e)}")
     
 
-def get_statistician_agent(vector_store_path: str = "database/statistician_chroma"):
-    return StatisticianAgent(vector_store_path)
+def get_statistician_agent(model: str = "openai", vector_store_path: str = "database/statistician_chroma"):
+    return StatisticianAgent(model, vector_store_path)
 
 if __name__ == "__main__":
     # Read the data with explicit data types
@@ -122,6 +125,6 @@ if __name__ == "__main__":
     '''
 )
     # question = "How many proteins are there in the data?"
-    statistician = get_statistician_agent()
+    statistician = get_statistician_agent(model="openai")
     response = statistician.analyze(question, df)
     print("\nResponse:", response)
