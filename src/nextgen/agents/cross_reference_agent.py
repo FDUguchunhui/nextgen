@@ -93,6 +93,9 @@ class CrossReferenceAgent(Agent):
         
         return completion.choices[0].message.content
 
+# Get the cross reference agent
+def get_cross_reference_agent(model: str = "md_anderson"):
+    return CrossReferenceAgent(model)
 
 if __name__ == "__main__":
     question = "What are the proteins that are important for breast cancer?"

@@ -2,10 +2,8 @@ from typing import Optional, Union, List
 import pandas as pd
 import os
 from pandasai import Agent
-import pandasai as pai
 from pandasai.llm import OpenAI
 from pandasai.ee.vectorstores import ChromaDB
-from pandasai import SmartDataframe
 from nextgen.pandas.client import MDAndersonLLM
 from nextgen.analysis.t_test import perform_t_test
 

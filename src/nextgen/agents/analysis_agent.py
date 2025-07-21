@@ -13,18 +13,23 @@ class AnalysisAgent(Agent):
     name: str = "Analysis Agent"
     color: str = '\033[32m'
 
-    def __init__(self, client=None):
+    def __init__(self, model: str = "md_anderson"):
         super().__init__()
         
         # Instantiate the client. Make sure the client points to the self-hosted LLM.
-        if client is None:
+        if model == "md_anderson":
             self.client = OpenAI(
                 api_key="unused",
                 base_url="https://apimd.mdanderson.edu/dig/llm/llama31-70b/v1/",
                 default_headers={"Ocp-Apim-Subscription-Key": os.environ["APIM_SUBSCRIPTION_KEY"]},
             )
+        elif model == "openai":
+            self.client = OpenAI(
+                api_key=os.environ["OPENAI_API_KEY"],
+                base_url="https://api.openai.com/v1",
+            )
         else:
-            self.client = client
+            raise ValueError(f"Invalid model: {model}")
 
     
     def make_message(self, question: str, sql: str, data) -> str:
@@ -93,6 +98,9 @@ class AnalysisAgent(Agent):
         df_sample = df.head(max_rows) if len(df) > max_rows else df
         return df_sample.to_dict(orient='records')
     
+def get_analysis_agent(model: str = "md_anderson"):
+    return AnalysisAgent(model)
+    
 
 if __name__ == "__main__":
     question = "What are the proteins that are important for breast cancer?"
@@ -103,7 +111,7 @@ if __name__ == "__main__":
         "cancer_type": ["breast", "breast", "breast"],
         "citrullination": [True, False, True]
     })
-    analysis_agent = AnalysisAgent()
+    analysis_agent = get_analysis_agent(model="md_anderson")
     result = analysis_agent.analyze(question, sql, df)
     print(result)
 

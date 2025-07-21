@@ -7,10 +7,7 @@ from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.sqlite import SqliteSaver
 
 # Local imports
-from nextgen.agents.data_scientist_agent import get_data_scientist_agent
-from nextgen.agents.statistician_agent import get_statistician_agent
-from nextgen.agents.analysis_agent import AnalysisAgent
-from nextgen.agents.cross_reference_agent import CrossReferenceAgent
+from nextgen.agents import get_data_scientist_agent, get_statistician_agent, get_analysis_agent, get_cross_reference_agent
 
 MODEL = "openai"
 
@@ -78,9 +75,9 @@ class ResearchGraph:
         self.data_scientist_agent = get_data_scientist_agent(model=MODEL, chroma_path=chroma_path)
 
         # Other agents
-        self.statistician = get_statistician_agent()
-        self.analysis_agent = AnalysisAgent()
-        self.cross_ref = CrossReferenceAgent(model=MODEL)
+        self.statistician = get_statistician_agent(model=MODEL)
+        self.analysis_agent = get_analysis_agent(model=MODEL)
+        self.cross_ref = get_cross_reference_agent(model=MODEL)
 
         # --------------------------- Build LangGraph --------------------------
         builder: StateGraph = StateGraph(PipelineState)
