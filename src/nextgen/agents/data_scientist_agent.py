@@ -38,7 +38,7 @@ initial_prompt = f"""
 
 
 
-def get_vanna_instance(model: str = 'md_anderson', chroma_path: str = 'database/data_scientist_chroma'):
+def get_vanna_instance(model: str = 'md_anderson', chroma_path: str = 'database/data_scientist_chroma', sql_path: str = 'database/nextgen.db'):
     
     if model == 'md_anderson':
         api_key = os.getenv('APIM_SUBSCRIPTION_KEY')
@@ -68,7 +68,7 @@ def get_vanna_instance(model: str = 'md_anderson', chroma_path: str = 'database/
                 'initial_prompt': initial_prompt,
                 'temperature': 0.0}
     vn = MyVanna(config=config)
-    vn.connect_to_sqlite('database/nextgen.db')
+    vn.connect_to_sqlite(sql_path)
     return vn
 
 class DataScientistAgent(Agent):
@@ -82,8 +82,8 @@ class DataScientistAgent(Agent):
         sql, df, _ = self.vn.ask(question=question, auto_train=False, allow_llm_to_see_data=True)
         return df, sql
     
-def get_data_scientist_agent(model: str = 'md_anderson'):
-    return DataScientistAgent(vanna_instance=get_vanna_instance(model=model))
+def get_data_scientist_agent(model: str = 'md_anderson', chroma_path: str = 'database/data_scientist_chroma'):
+    return DataScientistAgent(vanna_instance=get_vanna_instance(model=model, chroma_path=chroma_path))
 
 
 if __name__ == "__main__":

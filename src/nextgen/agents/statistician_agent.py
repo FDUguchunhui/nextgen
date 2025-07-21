@@ -15,7 +15,7 @@ class StatisticianAgent:
     using natural language queries.
     """
     
-    def __init__(self, model: str = "md_anderson", additional_dependencies: List[str] = None):
+    def __init__(self, vector_store_path: str = "database/statistician_chroma", additional_dependencies: List[str] = None):
         """
         Initialize the statistician agent.
         
@@ -23,10 +23,8 @@ class StatisticianAgent:
             api_base_url: Base URL for the OpenAI API
             additional_dependencies: Additional Python packages to whitelist for analysis
         """
-        if model == "md_anderson":
-            self.client = MDAndersonLLM()
-        # elif model == "openai":
-        #     self.client = OpenAI(api_token=os.environ["OPENAI_API_KEY"])
+        self.vector_store_path = vector_store_path
+        self.client = MDAndersonLLM()
         
         # Default dependencies for statistical analysis
         self.dependencies = ["scipy", "statistics", "numpy", "pandas", "scikit-learn", "warnings"]
@@ -78,7 +76,7 @@ class StatisticianAgent:
             }
             
             # create chroma vectorstore
-            vector_store = ChromaDB(persist_path="database/statistician_chroma_db")
+            vector_store = ChromaDB(persist_path=self.vector_store_path)
             agent = Agent(df, memory_size=100, config=config, vectorstore=vector_store)
 
             agent.train(queries=["The data is protein expression data with each row is a protein in a sample of cancer type. Perform t-test for each protein between the two group"],
@@ -111,6 +109,9 @@ class StatisticianAgent:
             raise Exception(f"Error analyzing data: {str(e)}")
     
 
+def get_statistician_agent(vector_store_path: str = "database/statistician_chroma"):
+    return StatisticianAgent(vector_store_path)
+
 if __name__ == "__main__":
     # Read the data with explicit data types
     df = pd.read_csv("data/test_statistician.csv")
@@ -121,6 +122,6 @@ if __name__ == "__main__":
     '''
 )
     # question = "How many proteins are there in the data?"
-    statistician = StatisticianAgent()
+    statistician = get_statistician_agent()
     response = statistician.analyze(question, df)
     print("\nResponse:", response)

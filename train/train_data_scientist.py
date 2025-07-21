@@ -7,7 +7,7 @@ import json
 
 
 # train the data scientist agent
-vn = get_vanna_instance()
+vn = get_vanna_instance(model='openai', chroma_path='database/data_scientist_chroma', sql_path='database/nextgen.db')
 
 with open('data/train_data_scientist.jsonl', 'r') as f:
     for line in f:

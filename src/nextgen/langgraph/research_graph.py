@@ -8,7 +8,7 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 
 # Local imports
 from nextgen.agents.data_scientist_agent import get_data_scientist_agent
-from nextgen.agents.statistician_agent import StatisticianAgent
+from nextgen.agents.statistician_agent import get_statistician_agent
 from nextgen.agents.analysis_agent import AnalysisAgent
 from nextgen.agents.cross_reference_agent import CrossReferenceAgent
 
@@ -71,8 +71,6 @@ class ResearchGraph:
             SQLite file used by LangGraph to persist state between calls. If
             *None*, a default ``database/langgraph_checkpoints.db`` is created.
         """
-        self.db_path = db_path or "database/nextgen.db"
-        chroma_path = chroma_path or "database/data_scientist_chroma"
         checkpoint_path = checkpoint_path or "database/langgraph_checkpoints.db"
 
         # -------------------------- Initialise helper objects -----------------
@@ -80,7 +78,7 @@ class ResearchGraph:
         self.data_scientist_agent = get_data_scientist_agent(model=MODEL, chroma_path=chroma_path)
 
         # Other agents
-        self.statistician = StatisticianAgent()
+        self.statistician = get_statistician_agent()
         self.analysis_agent = AnalysisAgent()
         self.cross_ref = CrossReferenceAgent(model=MODEL)
 
