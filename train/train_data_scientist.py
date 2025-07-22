@@ -17,7 +17,10 @@ with open('data/train_data_scientist.jsonl', 'r') as f:
         elif data['type'] == 'documentation':
             vn.train(documentation=data['documentation'])
 
+df_ddl = vn.run_sql("SELECT type, sql FROM sqlite_master WHERE sql is not null")
 
+for ddl in df_ddl['sql'].to_list():
+  vn.train(ddl=ddl)
 
 from vanna.flask import VannaFlaskApp
 app = VannaFlaskApp(vn)

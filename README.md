@@ -1,202 +1,317 @@
-# UniProt Human Protein JSON Downloader
+# 🧬 NextAgent Agentic AI
 
-This script downloads all human proteins from the UniProt REST API and saves them as a comprehensive JSON file. Each protein record contains all available information from UniProt.
+An intelligent, multi-agent AI system for protein expression analysis and cancer research, powered by advanced language models and automated statistical analysis.
 
-## Features
+![System Architecture](image/system_design.png)
 
-- Downloads all reviewed human proteins (Swiss-Prot entries) 
-- Uses the official UniProt REST API
-- Handles pagination automatically with cursor-based navigation
-- Saves complete protein information including:
-  - Basic identifiers (accession, name, ID)
-  - Protein descriptions and names
-  - Gene information
-  - Functional annotations (comments)
-  - Sequence data
-  - Cross-references to other databases
-  - Keywords and GO terms
-  - References and citations
-  - Feature annotations
-  - And much more...
+## 🚀 Overview
 
-## Query Used
+NextAGent is a agentic AI platform that revolutionizes protein expression analysis through the coordination of specialized AI agents. The system combines natural language processing, automated SQL generation, statistical analysis, and literature cross-referencing to provide comprehensive insights into protein biomarkers and cancer research.
 
-The script uses the query: `(reviewed:true) AND (organism_id:9606)`
+### Key Capabilities
 
-This retrieves:
-- **reviewed:true**: Only manually curated Swiss-Prot entries (high quality)
-- **organism_id:9606**: Human proteins only (Homo sapiens)
+- **🤖 Multi-Agent Architecture**: Coordinated AI agents with specialized roles
+- **💬 Natural Language Queries**: Ask research questions in plain English
+- **📊 Automated Statistical Analysis**: Built-in t-tests, ROC analysis, and more
+- **📚 Literature Cross-Referencing**: Automatic validation against scientific literature
+- **🧪 Protein Database Integration**: Complete UniProt protein information
+- **🎯 Cancer Research Focus**: Specialized workflows for oncology research
+- **📈 Interactive Visualizations**: Real-time charts and data exploration
+- **🔗 Flexible LLM Support**: Works with both proprietary and open-source models
 
-## Installation
+## 🏗️ System Architecture
 
-1. Install Python dependencies:
+The NextAgent system employs a sophisticated multi-agent architecture orchestrated by LangGraph:
+
+### Core Agents
+
+1. **Data Scientist Agent** 🔍
+   - Converts natural language questions to SQL queries
+   - Uses Vanna (LLM-powered SQL generator) with ChromaDB vector store
+   - Retrieves relevant protein expression data from the database
+
+2. **Statistician Agent** 📊
+   - Performs automated statistical analyses
+   - Supports t-tests, ROC AUC calculations, fold-change analysis
+   - Handles vectorized operations for performance optimization
+
+3. **Analysis Agent** 🧠
+   - Extracts key proteins from statistical results
+   - Prioritizes findings based on significance and effect size
+   - Formats results for downstream processing
+
+4. **Cross-Reference Agent** 📖
+   - Validates findings against scientific literature
+   - Provides evidence-based insights and citations
+   - Identifies potential novel biomarkers
+
+### Workflow Pipeline
+
+```
+Research Question → Data Scientist → Statistician → Analysis → Cross-Reference → Final Report
+```
+
+The LangGraph orchestrator manages state between agents and ensures seamless data flow through the pipeline.
+
+## 🛠️ Installation
+
+### Prerequisites
+
+- Python 3.11+
+- Git
+- Virtual environment (recommended)
+
+### Quick Start
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd nextgen
+   ```
+
+2. **Set up virtual environment**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   # OR using uv (Recommended)
+   uv sync
+   ```
+
+4. **Configure environment variables**
+   Create a `.env` file in the root directory:
+   ```bash
+   # For MD Anderson LLM (if applicable)
+   APIM_SUBSCRIPTION_KEY=your_md_anderson_key
+   
+   # For OpenAI (if using)
+   OPENAI_API_KEY=your_openai_key
+   ```
+
+5. **Initialize the database**
+   ```bash
+   cd construct_database
+   python init_database.py
+   ```
+
+6. **Download and set up protein data** (optional)
+   ```bash
+   python simple_uniprot_downloader.py
+   python add_proteins_db.py
+   ```
+
+## 📊 Database Setup
+
+The system uses a SQLite database with three main tables:
+
+### 1. Proteins Table
+- **Source**: UniProt canonical human proteins
+- **Fields**: Entry ID, protein names, gene names, function, domains, etc.
+- **Size**: ~20,000 human proteins with comprehensive annotations
+
+### 2. Measurement Table
+- **Source**: Protein expression measurements
+- **Fields**: Protein groups, intensities, sample IDs, modification states
+- **Format**: Long format for efficient querying
+
+### 3. Sample Table
+- **Source**: Sample metadata
+- **Fields**: Cancer types, patient demographics, clinical annotations
+- **Purpose**: Enables stratified analysis and cohort comparisons
+
+### Database Construction
+
 ```bash
-pip install -r requirements.txt
+# Initialize empty database
+python construct_database/init_database.py
+
+# Download UniProt data (optional - takes time)
+python construct_database/simple_uniprot_downloader.py
+
+# Add protein annotations
+python construct_database/add_proteins_db.py
+
+# Add measurement data
+python construct_database/add_measurement_table.py
+
+# Add sample metadata
+python construct_database/add_sample_table.py
 ```
 
-## Usage
+## 🎮 Usage
 
-Run the script:
+### Interactive Chat Interface
+
+Launch the Gradio web interface for interactive analysis:
+
 ```bash
-python uniprot_json_downloader.py
+python src/nextgen/chat/gradio_chat.py
 ```
 
-The script will:
-1. Connect to the UniProt REST API
-2. Download all human protein data in batches
-3. Save the complete dataset to `human_proteins_uniprot.json`
-4. Display download statistics
+Navigate to `http://localhost:7860` and start asking research questions like:
 
-## Output Format
+- "What proteins are important for distinguishing breast cancer from other cancer types?"
+- "Find biomarkers for lung cancer with statistical significance"
+- "Compare protein expression between tumor and normal samples"
 
-The output JSON file has the following structure:
+### Programmatic Usage
 
-```json
-{
-  "metadata": {
-    "query": "(reviewed:true) AND (organism_id:9606)",
-    "total_proteins": 20394,
-    "download_timestamp": "2024-01-15 10:30:45 UTC",
-    "description": "Human proteins from UniProt (reviewed Swiss-Prot entries)",
-    "source": "UniProt REST API",
-    "base_url": "https://rest.uniprot.org"
-  },
-  "proteins": [
-    {
-      "primaryAccession": "P04217",
-      "uniProtkbId": "A2GL_HUMAN",
-      "entryType": "UniProtKB reviewed (Swiss-Prot)",
-      "proteinDescription": {
-        "recommendedName": {
-          "fullName": {
-            "value": "Alpha-2-HS-glycoprotein"
-          }
-        }
-      },
-      "organism": {
-        "scientificName": "Homo sapiens",
-        "commonName": "Human",
-        "taxonId": 9606
-      },
-      "sequence": {
-        "value": "MKSLVLLLLLLLLLPLLGKVQGKLCP...",
-        "length": 367,
-        "molWeight": 39324
-      },
-      "comments": [
-        {
-          "commentType": "FUNCTION",
-          "texts": [
-            {
-              "value": "Promotes endocytosis..."
-            }
-          ]
-        }
-      ],
-      "keywords": [...],
-      "uniProtKBCrossReferences": [...],
-      "references": [...],
-      "features": [...]
-    }
-  ]
-}
-```
-
-## Data Fields Available
-
-Each protein record contains comprehensive information:
-
-### Basic Information
-- `primaryAccession`: UniProt accession number
-- `uniProtkbId`: UniProt entry name
-- `entryType`: Type of entry (Swiss-Prot/TrEMBL)
-- `proteinExistence`: Evidence level for protein existence
-
-### Protein Description
-- `proteinDescription`: Recommended and alternative names
-- `organism`: Organism information (name, taxonomy)
-- `genes`: Gene names and synonyms
-
-### Functional Information
-- `comments`: Functional annotations (function, subcellular location, etc.)
-- `keywords`: Controlled vocabulary keywords
-- `features`: Sequence features and domains
-
-### Sequence Data
-- `sequence`: Amino acid sequence and properties
-  - `value`: The actual sequence
-  - `length`: Sequence length
-  - `molWeight`: Molecular weight
-
-### External Links
-- `uniProtKBCrossReferences`: Links to other databases (GO, PDB, etc.)
-- `references`: Literature citations
-
-## Example Usage
+#### Using the Research Graph
 
 ```python
-import json
+from nextgen.langgraph.research_graph import ResearchGraph
 
-# Load the downloaded data
-with open('human_proteins_uniprot.json', 'r') as f:
-    data = json.load(f)
+# Initialize the research pipeline
+graph = ResearchGraph()
 
-proteins = data['proteins']
+# Ask a research question
+question = "What proteins are differentially expressed in breast cancer?"
+answer = graph.run(question)
 
-# Find proteins by name
-insulin_proteins = [
-    p for p in proteins 
-    if 'insulin' in p.get('proteinDescription', {})
-        .get('recommendedName', {})
-        .get('fullName', {})
-        .get('value', '').lower()
-]
-
-# Get protein by accession
-def get_protein_by_accession(accession):
-    for protein in proteins:
-        if protein.get('primaryAccession') == accession:
-            return protein
-    return None
-
-# Extract sequences
-sequences = {}
-for protein in proteins:
-    acc = protein.get('primaryAccession')
-    seq = protein.get('sequence', {}).get('value')
-    if acc and seq:
-        sequences[acc] = seq
+print(answer)
 ```
 
-## Statistics
+#### Using Individual Agents
 
-The script typically downloads:
-- ~20,000+ reviewed human proteins
-- Complete functional annotations
-- Sequence information for all proteins
-- Cross-references to 100+ databases
-- Literature citations and evidence
+```python
+from nextgen.agents import (
+    get_data_scientist_agent,
+    get_statistician_agent,
+    get_analysis_agent,
+    get_cross_reference_agent
+)
 
-## Notes
+# Data retrieval
+data_scientist = get_data_scientist_agent()
+raw_data, sql = data_scientist.analyze("Find breast cancer proteins")
 
-- The download may take several minutes depending on network speed
-- The resulting JSON file is typically 200-500 MB
-- Rate limiting is implemented to be respectful to the UniProt servers
-- Only reviewed (Swiss-Prot) entries are downloaded for highest quality
+# Statistical analysis
+statistician = get_statistician_agent()
+stats_result = statistician.analyze("Perform t-test analysis", raw_data)
 
-## Error Handling
+# Extract key proteins
+analysis_agent = get_analysis_agent()
+proteins = analysis_agent.analyze(question, sql, stats_result)
 
-The script includes:
-- Automatic retry on network errors
-- Rate limiting to avoid overwhelming the server
-- Comprehensive logging
-- Graceful handling of incomplete data
+# Literature validation
+cross_ref = get_cross_reference_agent()
+final_report = cross_ref.analyze(question, proteins)
+```
 
-## License
+### Command Line Usage
 
-This script is for educational and research purposes. The UniProt data is distributed under the Creative Commons Attribution (CC BY 4.0) License.
+```bash
+# Run basic analysis
+python chat.py
 
-## Citation
+# Train data scientist agent
+python train/train_data_scientist.py
 
-If you use UniProt data in your research, please cite:
-- UniProt Consortium. UniProt: the universal protein knowledgebase in 2023. Nucleic Acids Res. 51:D523-D531 (2023)
+# Run statistical analysis
+python src/nextgen/analysis/t_test.py
+```
+
+## 🧪 Examples
+
+### Example 1: Cancer Biomarker Discovery
+
+```python
+question = "What proteins distinguish pancreatic cancer from healthy tissue?"
+
+# The system will:
+# 1. Based on the research question, split it into small steps and generate detailed query plan, saving research question to the shared state.
+# 2. Generate database-dependent SQL to query relevant data, saving SQL and raw data to shared state. 
+# 3. Perform the right statistical tests (t-tests, ROC analysis)
+# 4. Identify significant proteins
+# 5. Cross-reference with literature
+# 6. Generate a comprehensive report with evidence
+
+** At each step, important information and intermidate data are saved into a shared state, and agent perform the appropriate operation based on comprehensive understanding of the information stored in the shared state. 
+```
+
+
+## 🔧 Configuration
+
+### Model Selection
+
+Configure which LLM to use in your agents:
+
+```python
+# Use MD Anderson LLM
+# you can set you own proprietary LLM model based the code used to set "md_anderson"
+agent = get_data_scientist_agent(model="md_anderson")
+
+# Use OpenAI
+agent = get_data_scientist_agent(model="openai")
+```
+
+### Database Paths
+
+Customize database and vector store locations:
+
+```python
+graph = ResearchGraph(
+    db_path="path/to/your/database.db",
+    chroma_path="path/to/vector/store",
+    checkpoint_path="path/to/checkpoints.db"
+)
+```
+
+### Statistical Parameters
+
+
+
+## 📁 Project Structure
+
+```
+nextgen/
+├── src/nextgen/           # Main source code
+│   ├── agents/           # AI agent implementations
+│   ├── langgraph/        # Workflow orchestration
+│   ├── chat/             # Web interface
+│   ├── analysis/         # Statistical methods
+│   ├── openai/           # LLM client implementations
+│   ├── pandas/           # Data processing utilities
+│   └── vanna/            # SQL generation
+├── construct_database/   # Database setup scripts
+├── data/                 # Raw data files
+├── database/            # SQLite database and vector stores
+├── notebooks/           # Jupyter notebooks for exploration
+├── train/               # Agent training scripts
+├── exports/             # Output files and visualizations
+└── requirements.txt     # Python dependencies
+```
+
+## 🔬 Scientific Applications
+
+### Cancer Research
+- Biomarker discovery across cancer types
+- Differential expression analysis
+- Pathway enrichment studies
+
+### Protein Function Studies
+- Post-translational modification analysis
+- Protein-protein interaction networks
+- Subcellular localization patterns
+- Disease association studies
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our contributing guidelines:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Submit a pull request
+
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+**Built with ❤️ for the scientific community**

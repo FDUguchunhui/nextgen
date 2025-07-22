@@ -17,6 +17,7 @@ class AnalysisAgent(Agent):
         super().__init__()
         
         # Instantiate the client. Make sure the client points to the self-hosted LLM.
+        self.model = model
         if model == "md_anderson":
             self.client = OpenAI(
                 api_key="unused",
@@ -85,11 +86,18 @@ class AnalysisAgent(Agent):
         messages = self.make_message(question, sql, formatted_data)
         
         # 4. Get LLM response
-        completion = self.client.chat.completions.create(
-            messages=messages,
-            model="unused",
-            temperature=0
-        )
+        if self.model == "md_anderson":
+            completion = self.client.chat.completions.create(
+                messages=messages,
+                model="unused",
+                temperature=0
+            )
+        elif self.model == "openai":
+            completion = self.client.chat.completions.create(
+                messages=messages,
+                model="gpt-4.1",
+                temperature=0
+            )
         
         return ast.literal_eval(completion.choices[0].message.content)
 
@@ -111,7 +119,7 @@ if __name__ == "__main__":
         "cancer_type": ["breast", "breast", "breast"],
         "citrullination": [True, False, True]
     })
-    analysis_agent = get_analysis_agent(model="md_anderson")
+    analysis_agent = get_analysis_agent(model="openai")
     result = analysis_agent.analyze(question, sql, df)
     print(result)
 
