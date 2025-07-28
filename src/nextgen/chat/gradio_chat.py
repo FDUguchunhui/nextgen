@@ -28,13 +28,13 @@ custom_css = """
 
 /* Header styling */
 .header-container {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-color: #00bcd4;
     padding: 2rem;
     border-radius: 15px;
     margin-bottom: 2rem;
     color: white;
     text-align: center;
-    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 188, 212, 0.3);
 }
 
 .header-title {
@@ -62,24 +62,52 @@ custom_css = """
 
 /* Input area styling */
 .input-container {
-    background: #f8fafc;
-    border-radius: 15px;
-    padding: 1rem;
-    border: 2px solid #e2e8f0;
+    background: #f8fafc !important;
+    border-radius: 15px !important;
+    border: 2px solid #e2e8f0 !important;
     transition: all 0.3s ease;
-    margin-right: 0.5rem;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .input-container:focus-within {
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #00bcd4 !important;
+    box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.1) !important;
+}
+
+.input-container textarea {
+    background: transparent !important;
+    border: none !important;
+    padding: 1rem !important;
+    border-radius: 15px !important;
+    font-size: 1rem !important;
+    min-height: 70px !important;
+    resize: none !important;
+}
+
+.input-container textarea:focus {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 /* Input row styling */
 .input-row {
-    display: flex;
-    align-items: flex-end;
-    gap: 0.5rem;
+    display: flex !important;
+    align-items: stretch !important;
+    gap: 0.5rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.input-row > div {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.input-row .gr-form {
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
 }
 
 /* Send button styling */
@@ -89,13 +117,14 @@ custom_css = """
     border: none;
     border-radius: 12px;
     padding: 1rem 1.5rem;
-    margin-left: 0.5rem;
     font-weight: 600;
     font-size: 1rem;
-    height: 100%;
-    min-height: 60px;
+    min-height: 70px;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .send-btn:hover {
@@ -267,7 +296,7 @@ custom_css = """
 """
 
 class ChatInterface:
-    def __init__(self, model: str = 'md_anderson'):
+    def __init__(self, model: str = 'openai'):
         logger.info("Initializing ChatInterface...")
         self.data_scientist_agent = get_data_scientist_agent(model=model, chroma_path='database/data_scientist_chroma')
         self.analysis_agent = get_analysis_agent(model=model)
@@ -296,37 +325,31 @@ class ChatInterface:
         try:
             # 1. Data retrieval
             history.append({"role": "user", "content": message})
-            assistant_msg = "🔍 **Generating SQL query and fetching data...**\n"
-            assistant_msg += "<div class='status-indicator status-processing'></div> Analyzing your request and building database query"
-            history.append({"role": "assistant", "content": assistant_msg})
+            assistant_msg = "**Data Scientist Agent - Generating SQL Query**\n\n"
+            assistant_msg += "<div class='status-indicator status-processing'></div> Analyzing your request and building database query..."
+            history.append({"role": "assistant", "content": assistant_msg, "agent": "data_scientist"})
             yield history, None, None
 
             df, sql = self.data_scientist_agent.analyze(message)
-            assistant_msg = f"✅ **SQL Query Generated Successfully**\n\n"
-            assistant_msg += f"```sql\n{sql}\n```\n\n"
-            assistant_msg += f"<div class='status-indicator status-complete'></div> Query executed successfully"
-            history.append({"role": "assistant", "content": assistant_msg})
+            assistant_msg = f"**Data Scientist Agent - Query Complete**\n\n"
+            assistant_msg += f"**Generated SQL Query:**\n```sql\n{sql}\n```\n\n"
+            assistant_msg += f"**Data Retrieved:**\n"
+            assistant_msg += f"• **Rows:** {len(df):,}\n"
+            assistant_msg += f"• **Columns:** {len(df.columns)}\n\n"
+            assistant_msg += f"**Data Preview (First 5 rows):**\n\n"
+            assistant_msg += f"{df.head(5).to_markdown(index=False)}"
+            history[-1] = {"role": "assistant", "content": assistant_msg, "agent": "data_scientist"}
             yield history, None, None
 
             # Save raw data to file
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             raw_df_file = self.save_dataframe_to_temp(df, f"raw_data_{timestamp}.csv")
-
-            # 2. Show data preview with download option
-            assistant_msg = f"📊 **Data Retrieved Successfully**\n\n"
-            assistant_msg += f"• **Rows:** {len(df):,}\n"
-            assistant_msg += f"• **Columns:** {len(df.columns)}\n"
-            assistant_msg += f"• **Data Types:** {', '.join(df.dtypes.astype(str).unique())}\n\n"
-            assistant_msg += f"**📋 Data Preview (First 10 rows):**\n\n"
-            assistant_msg += f"{df.head(10).to_markdown(index=False)}\n\n"
-            assistant_msg += "🎉 **Raw data file is ready for download!**"
-            history.append({"role": "assistant", "content": assistant_msg})
             yield history, raw_df_file, None
 
-            # 3. Statistics
-            assistant_msg = "📈 **Running Statistical Analysis...**\n"
-            assistant_msg += "<div class='status-indicator status-processing'></div> Performing two-sample t-tests for protein comparisons"
-            history.append({"role": "assistant", "content": assistant_msg})
+            # 2. Statistical Analysis
+            assistant_msg = "**Statistician Agent - Running Analysis**\n\n"
+            assistant_msg += "<div class='status-indicator status-processing'></div> Performing two-sample t-tests for protein comparisons..."
+            history.append({"role": "assistant", "content": assistant_msg, "agent": "statistician"})
             yield history, raw_df_file, None
 
             stat_result = self.statistician_agent.analyze(
@@ -337,60 +360,63 @@ class ChatInterface:
             # Save statistical results to file
             stat_result_file = self.save_dataframe_to_temp(stat_result, f"statistical_results_{timestamp}.csv")
 
-            # 4. Show statistical results with download option
-            assistant_msg = f"🧮 **Statistical Analysis Complete**\n\n"
-            assistant_msg += f"• **Statistical Tests:** {len(stat_result)} proteins analyzed\n"
-            assistant_msg += f"• **Significant Results:** {len(stat_result[stat_result.get('p_value', 1) < 0.05]) if 'p_value' in stat_result.columns else 'N/A'}\n"
-            assistant_msg += f"• **Columns:** {len(stat_result.columns)}\n\n"
-            assistant_msg += f"**📊 Statistical Results Preview:**\n\n"
-            assistant_msg += f"{stat_result.head(10).to_markdown(index=False)}\n\n"
-            assistant_msg += "📈 **Statistical results file is ready for download!**"
-            history.append({"role": "assistant", "content": assistant_msg})
+            assistant_msg = f"**Statistician Agent - Analysis Complete**\n\n"
+            assistant_msg += f"**Statistical Analysis Results:**\n"
+            assistant_msg += f"• **Tests Performed:** {len(stat_result)} proteins analyzed\n"
+            assistant_msg += f"• **Significant Results:** {len(stat_result[stat_result.get('p_value', 1) < 0.05]) if 'p_value' in stat_result.columns else 'N/A'}\n\n"
+            assistant_msg += f"**Results Preview:**\n\n"
+            assistant_msg += f"{stat_result.head(5).to_markdown(index=False)}"
+            history[-1] = {"role": "assistant", "content": assistant_msg, "agent": "statistician"}
             yield history, raw_df_file, stat_result_file
 
-            # 5. Analysis
-            assistant_msg = "🧠 **Analyzing Results...**\n"
-            assistant_msg += "<div class='status-indicator status-processing'></div> Interpreting statistical findings and generating insights"
-            history.append({"role": "assistant", "content": assistant_msg})
+            # 3. Analysis Agent
+            assistant_msg = "**Analysis Agent - Interpreting Results**\n\n"
+            assistant_msg += "<div class='status-indicator status-processing'></div> Analyzing statistical findings and generating insights..."
+            history.append({"role": "assistant", "content": assistant_msg, "agent": "analysis"})
             yield history, raw_df_file, stat_result_file
 
             analysis_result = self.analysis_agent.analyze(message, sql, stat_result)
-            assistant_msg = "✅ **Analysis Complete**\n"
-            assistant_msg += "<div class='status-indicator status-complete'></div> Statistical interpretation finished"
-            history.append({"role": "assistant", "content": assistant_msg})
+            assistant_msg = f"**Analysis Agent - Interpretation Complete**\n\n"
+            assistant_msg += f"**Key Insights:**\n\n{analysis_result}"
+            history[-1] = {"role": "assistant", "content": assistant_msg, "agent": "analysis"}
             yield history, raw_df_file, stat_result_file
 
-            # 6. Cross-reference
-            assistant_msg = "🔗 **Cross-referencing Results...**\n"
-            assistant_msg += "<div class='status-indicator status-processing'></div> Enriching findings with external protein databases"
-            history.append({"role": "assistant", "content": assistant_msg})
+            # 4. Cross-reference Agent
+            assistant_msg = "**Cross-Reference Agent - Database Enrichment**\n\n"
+            assistant_msg += "<div class='status-indicator status-processing'></div> Enriching findings with external protein databases..."
+            history.append({"role": "assistant", "content": assistant_msg, "agent": "cross_reference"})
             yield history, raw_df_file, stat_result_file
 
             final_result = self.cross_reference_agent.analyze(
                 question=analysis_result,
                 proteins=analysis_result
             )
-            assistant_msg = "🎯 **Cross-reference Complete**\n"
-            assistant_msg += "<div class='status-indicator status-complete'></div> External database enrichment finished"
-            history.append({"role": "assistant", "content": assistant_msg})
+            assistant_msg = f"**Cross-Reference Agent - Enrichment Complete**\n\n"
+            assistant_msg += f"**External Database Insights:**\n\n{final_result}"
+            history[-1] = {"role": "assistant", "content": assistant_msg, "agent": "cross_reference"}
             yield history, raw_df_file, stat_result_file
 
-            # Final result
-            final_msg = f"## 🎊 **Analysis Complete!**\n\n"
-            final_msg += f"### 📋 **Summary**\n{final_result}\n\n"
-            final_msg += "### 📁 **Files Available**\n"
+            # Final summary message
+            final_msg = f"## **Analysis Pipeline Complete**\n\n"
+            final_msg += f"### **Summary**\n"
+            final_msg += f"All agents have completed their analysis. The pipeline processed:\n"
+            final_msg += f"• **{len(df):,} data records** retrieved by Data Scientist Agent\n"
+            final_msg += f"• **{len(stat_result)} statistical tests** performed by Statistician Agent\n"
+            final_msg += f"• **Comprehensive interpretation** provided by Analysis Agent\n"
+            final_msg += f"• **External database enrichment** completed by Cross-Reference Agent\n\n"
+            final_msg += "### **Files Available for Download**\n"
             final_msg += "• Raw data CSV file with all retrieved records\n"
             final_msg += "• Statistical analysis results with p-values and effect sizes\n\n"
-            final_msg += "*All files are available for download in the sidebar.* 📥"
+            final_msg += "*Use the download buttons in the sidebar to access your files.*"
             
-            history.append({"role": "assistant", "content": final_msg})
+            history.append({"role": "assistant", "content": final_msg, "agent": "summary"})
             yield history, raw_df_file, stat_result_file
 
         except Exception as e:
-            error_msg = f"❌ **Error Occurred**\n\n"
+            error_msg = f"**Error in Analysis Pipeline**\n\n"
             error_msg += f"**Error Details:** {str(e)}\n\n"
             error_msg += "Please try rephrasing your question or contact support if the issue persists."
-            history.append({"role": "assistant", "content": error_msg})
+            history.append({"role": "assistant", "content": error_msg, "agent": "error"})
             yield history, raw_df_file, stat_result_file
 
 def main():
@@ -409,7 +435,7 @@ def main():
             with gr.Column():
                 gr.HTML("""
                 <div class="header-container">
-                    <div class="header-title">🧬 NextGen Protein Analysis Suite</div>
+                    <div class="header-title">NextAGent AI research assistant</div>
                     <div class="header-subtitle">
                         AI-Powered Protein Expression Analysis & Statistical Insights
                     </div>
@@ -426,7 +452,7 @@ def main():
                             height=650,
                             show_label=False,
                             avatar_images=(
-                                "src/nextgen/img/user.png", 
+                                "src/nextgen/img/user.jpeg", 
                                 None
                             ),
                             bubble_full_width=False,
@@ -435,20 +461,19 @@ def main():
                         gr.HTML('</div>')
                 
                 # Enhanced input area
-                with gr.Row():
-                    with gr.Column(scale=9):
-                        gr.HTML('<div class="input-container">')
+                with gr.Row(elem_classes=["input-row"]):
+                    with gr.Column(scale=9, min_width=0):
                         msg = gr.Textbox(
-                            placeholder="💬 Ask me anything about protein expression, cancer types, or statistical analysis...",
+                            placeholder="Ask me anything about protein expression, cancer types, or statistical analysis...",
                             show_label=False,
-                            container=False,
+                            container=True,
                             lines=2,
-                            max_lines=4
+                            max_lines=4,
+                            elem_classes=["input-container"]
                         )
-                        gr.HTML('</div>')
                     with gr.Column(scale=1, min_width=100):
                         send_btn = gr.Button(
-                            "🚀 Send",
+                            "Send",
                             variant="primary",
                             size="lg",
                             elem_classes=["send-btn"]
@@ -457,56 +482,44 @@ def main():
                 # Helpful instruction
                 gr.HTML("""
                 <div style="text-align: center; margin: 0.5rem 0; color: #64748b; font-size: 0.9rem;">
-                    💡 Type your question above and click <strong>Send</strong> or press <strong>Enter</strong> to start the analysis
+                    Type your question above and click <strong>Send</strong> or press <strong>Enter</strong> to start the analysis
                 </div>
                 """)
                 
                 # Enhanced example buttons
-                gr.Markdown("### 🚀 **Quick Start Examples**")
+                gr.Markdown("### **Quick Start Examples**")
                 with gr.Row():
                     example1 = gr.Button(
-                        "🔬 Extract Cancer Protein Data", 
+                        "Extract Cancer Protein Data", 
                         elem_classes=["example-btn"],
                         variant="secondary"
                     )
                     example2 = gr.Button(
-                        "📊 Find Differential Expression", 
+                        "Find Differential Expression", 
                         elem_classes=["example-btn"],
                         variant="secondary"
                     )
                     example3 = gr.Button(
-                        "🎯 Breast Cancer Analysis", 
+                        "Breast Cancer Analysis", 
                         elem_classes=["example-btn"],
                         variant="secondary"
                     )
-                
-                # Additional examples row
-                with gr.Row():
-                    example4 = gr.Button(
-                        "🧮 Statistical Significance Test", 
-                        elem_classes=["example-btn"],
-                        variant="secondary"
-                    )
-                    example5 = gr.Button(
-                        "🔍 Protein Function Analysis", 
-                        elem_classes=["example-btn"],
-                        variant="secondary"
-                    )
+
             
             # Enhanced download sidebar
             with gr.Column(scale=3):
                 gr.HTML("""
                 <div class="download-section">
-                    <div class="download-title">📁 Download Center</div>
+                    <div class="download-title">Download Center</div>
                     <div class="info-card">
-                        <strong>📋 Available Files:</strong><br>
+                        <strong>Available Files:</strong><br>
                         Files will appear here as your analysis progresses. Each step generates downloadable results.
                     </div>
                 </div>
                 """)
                 
                 raw_data_download = gr.DownloadButton(
-                    label="📊 Raw Data (CSV)",
+                    label="Raw Data (CSV)",
                     value=None,
                     visible=False,
                     elem_classes=["download-btn"],
@@ -514,7 +527,7 @@ def main():
                 )
                 
                 stat_results_download = gr.DownloadButton(
-                    label="📈 Statistical Results (CSV)", 
+                    label="Statistical Results (CSV)", 
                     value=None,
                     visible=False,
                     elem_classes=["download-btn"],
@@ -523,7 +536,7 @@ def main():
                 
                 gr.HTML("""
                 <div style="margin-top: 1rem; padding: 1rem; background: #f7fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
-                    <strong>💡 Tips:</strong><br>
+                    <strong>Tips:</strong><br>
                     • Be specific in your questions<br>
                     • Mention specific cancer types<br>
                     • Ask for statistical comparisons<br>
@@ -533,13 +546,13 @@ def main():
                 
                 gr.HTML("""
                 <div style="margin-top: 1rem; padding: 1rem; background: linear-gradient(145deg, #ebf8ff, #bee3f8); border-radius: 8px; border: 1px solid #90cdf4;">
-                    <strong>🎯 Analysis Pipeline:</strong><br>
-                    1. 🔍 SQL Query Generation<br>
-                    2. 📊 Data Retrieval<br>
-                    3. 📈 Statistical Testing<br>
-                    4. 🧠 Result Analysis<br>
-                    5. 🔗 Cross-Reference<br>
-                    6. 📋 Final Report
+                    <strong>Analysis Pipeline:</strong><br>
+                    1. SQL Query Generation<br>
+                    2. Data Retrieval<br>
+                    3. Statistical Testing<br>
+                    4. Result Analysis<br>
+                    5. Cross-Reference<br>
+                    6. Final Report
                 </div>
                 """)
 
@@ -558,17 +571,16 @@ def main():
                     # First message is the user message
                     user_msg = response_history[0]["content"]
                     
-                    # Collect all assistant messages and combine them
-                    assistant_messages = []
+                    # Create separate chat entries for each agent response
                     for i in range(1, len(response_history)):
                         if response_history[i]["role"] == "assistant":
-                            assistant_messages.append(response_history[i]["content"])
+                            agent_response = response_history[i]["content"]
+                            # Add each agent response as a separate chat entry
+                            chatbot_history.append([None, agent_response])
                     
-                    # Combine all assistant messages with section breaks
-                    combined_bot_msg = "\n\n---\n\n".join(assistant_messages) if assistant_messages else ""
-                    
-                    if combined_bot_msg:
-                        chatbot_history.append([user_msg, combined_bot_msg])
+                    # Set the user message only on the first entry
+                    if chatbot_history:
+                        chatbot_history[0][0] = user_msg
                 
                 # Update download buttons visibility and files
                 raw_visible = raw_file is not None
@@ -593,7 +605,7 @@ def main():
             
         example1.click(
             set_example, 
-            inputs=gr.State("Extract protein expression data and cancer type information. Focus on breast cancer and gastric cancer samples with their corresponding protein expression levels."), 
+            inputs=gr.State("Extract protein expression data for breast cancer and all other cancer types (not including control samples, and rename this group as 'ohter'). For protein also include the gene name."), 
             outputs=msg
         )
         example2.click(
@@ -606,16 +618,6 @@ def main():
             inputs=gr.State("Show me detailed protein expression levels in breast cancer samples. Include statistical summaries and identify outliers."),
             outputs=msg
         )
-        example4.click(
-            set_example,
-            inputs=gr.State("Perform comprehensive statistical analysis comparing protein expression across different cancer types. Include t-tests, effect sizes, and confidence intervals."),
-            outputs=msg
-        )
-        example5.click(
-            set_example,
-            inputs=gr.State("Analyze the biological functions and pathways of significantly expressed proteins. Cross-reference with protein databases for functional insights."),
-            outputs=msg
-        )
     
     logger.info("Launching enhanced Gradio interface...")
     demo.queue(max_size=10)  # Enable queuing for streaming updates
@@ -624,7 +626,7 @@ def main():
         server_name="0.0.0.0",
         show_api=False,
         show_error=True,
-        favicon_path="src/nextgen/img/user.png" if os.path.exists("src/nextgen/img/user.png") else None
+        favicon_path="src/nextgen/img/user.jpeg" if os.path.exists("src/nextgen/img/user.jpeg") else None
     )
 
 if __name__ == "__main__":
