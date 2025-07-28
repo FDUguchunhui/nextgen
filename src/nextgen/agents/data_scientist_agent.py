@@ -68,7 +68,9 @@ def get_vanna_instance(model: str = 'md_anderson', chroma_path: str = 'database/
                 'initial_prompt': initial_prompt,
                 'temperature': 0.0}
     vn = MyVanna(config=config)
-    vn.connect_to_sqlite(sql_path)
+    # vn.connect_to_sqlite(sql_path)
+    vn.connect_to_mysql(host='ROPRLCPASDB', dbname='ai_test', user='root', password='hanashIpas', port=3306)
+
     return vn
 
 class DataScientistAgent(Agent):

@@ -17,10 +17,19 @@ with open('data/train_data_scientist.jsonl', 'r') as f:
         elif data['type'] == 'documentation':
             vn.train(documentation=data['documentation'])
 
-df_ddl = vn.run_sql("SELECT type, sql FROM sqlite_master WHERE sql is not null")
+# df_ddl = vn.run_sql("SELECT type, sql FROM sqlite_master WHERE sql is not null")
 
-for ddl in df_ddl['sql'].to_list():
-  vn.train(ddl=ddl)
+df_information_schema = vn.run_sql("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'ai_test'")
+
+# This will break up the information schema into bite-sized chunks that can be referenced by the LLM
+plan = vn.get_training_plan_generic(df_information_schema)
+plan
+
+# If you like the plan, then uncomment this and run it to train
+vn.train(plan=plan)
+
+# for ddl in df_ddl['sql'].to_list():
+#   vn.train(ddl=ddl)
 
 from vanna.flask import VannaFlaskApp
 app = VannaFlaskApp(vn)
